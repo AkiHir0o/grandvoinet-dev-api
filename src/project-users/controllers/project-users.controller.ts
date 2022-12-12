@@ -27,13 +27,13 @@ export class ProjectUsersController{
 
     @UseGuards(JwtAuthGuard)
     @Get()
-    async findAll(): Promise<CreateProjectUserDto[]>{
+    async findAll(): Promise<ProjectUser[]>{
       return await this.projectUsersService.findAll();
     }
 
     @UseGuards(JwtAuthGuard)
     @Get(':id')
-    async getById(@Request() req: Request & { user: JwtInterface }, @Param('id') id: string): Promise<CreateProjectUserDto> {
+    async getById(@Request() req: Request & { user: JwtInterface }, @Param('id') id: string): Promise<ProjectUser> {
       if(req.user.role === "Admin" || req.user.role === "ProjectManager"){
         return this.projectUsersService.getById(id)
       }

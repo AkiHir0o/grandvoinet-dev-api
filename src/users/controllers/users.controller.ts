@@ -23,7 +23,7 @@ import { User } from '../user.entity';
 
     @UseGuards(JwtAuthGuard)
     @Get()
-    async findAll(): Promise<CreateUserDto[]> {      
+    async findAll(): Promise<User[]> {      
       return this.userService.findAll();
     }
 
@@ -35,7 +35,7 @@ import { User } from '../user.entity';
 
     @UseGuards(JwtAuthGuard)
     @Get('/me')
-    me(@Request() req) : Promise<LoginUserDto> {
+    me(@Request() req) : Promise<User> {
       return req.user;
     }
     

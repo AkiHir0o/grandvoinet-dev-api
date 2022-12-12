@@ -21,7 +21,7 @@ export class Event extends BaseEntity {
   @Column('uuid')
   userId!: string; //au format uuidv4
 
-  @ManyToOne(() => User)
-  @JoinColumn()
-  user!: User
+  // @ManyToOne(() => User)
+  // @JoinColumn()
+  // user!: User
 }

@@ -10,11 +10,4 @@ export class CreateEnventDto{
   
   @IsOptional()
   public eventDescription?: string;
-
-  @IsOptional()
-  @IsString()
-  public eventStatus?: 'Pending' | 'Accepted' | 'Declined' // valeur par défaut : 'Pending';
-
-  @IsNotEmpty()
-  public userId!: string;
 }

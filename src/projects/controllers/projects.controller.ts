@@ -1,4 +1,5 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Request, UnauthorizedException, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, ForbiddenException, Get, Param, Post, Request, UnauthorizedException, UseGuards } from "@nestjs/common";
+import { isUUID } from "class-validator";
 import { JwtAuthGuard } from "../../auth/guards/jwt-auth.guard";
 import JwtInterface from "../../auth/interfaces/jwt-interface";
 import { CreateProjectDto } from "../dto/create_project_dto";
@@ -23,7 +24,7 @@ export class ProjectsController {
 
     @UseGuards(JwtAuthGuard)
     @Get()
-    async findAll(@Request() req: Request & { user: JwtInterface }): Promise<CreateProjectDto[]>{
+    async findAll(@Request() req: Request & { user: JwtInterface }): Promise<Project[]>{
       if(req.user.role === "Admin" || req.user.role === "ProjectManager"){
         return await this.projectService.findAll();
       }
@@ -34,7 +35,13 @@ export class ProjectsController {
 
     @UseGuards(JwtAuthGuard)
     @Get(':id')
-    getById(@Param('id') id: string): Promise<CreateProjectDto> {
-      return this.projectService.getById(id)
+    async getById(@Param('id') id: string, @Request() req): Promise<Project> {
+      if(!isUUID(id)) throw new BadRequestException("Invalid id");
+      if(req.user.role === "Admin" || req.user.role === "ProjectManager"){
+        return this.projectService.getById(id)
+      }
+      else{
+        return await this.projectService.findProjectUser(req.user.id, id);
+      }
     }
 }

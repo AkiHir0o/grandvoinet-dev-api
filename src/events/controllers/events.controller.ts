@@ -14,18 +14,18 @@ export class EventsController{
   @UseGuards(JwtAuthGuard)
   @Post('/')
   async create(@Request() req: Request & { user: JwtInterface }, @Body() createEventDto: CreateEnventDto){
-      return await this.eventService.create(createEventDto)
+      return await this.eventService.create(createEventDto, req.user)
   }
 
   @UseGuards(JwtAuthGuard)
   @Get()
-  async findAll(): Promise<CreateEnventDto[]>{
-    return await this.eventService.findAll();
+  async findAll(): Promise<Event[]>{
+    return this.eventService.findAll();
   }
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  getById(@Param('id') id: string): Promise<CreateEnventDto> {
+  getById(@Param('id') id: string): Promise<Event> {
     return this.eventService.getById(id);
   }
 }

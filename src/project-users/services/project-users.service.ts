@@ -2,6 +2,8 @@ import { BadRequestException, Injectable, NotFoundException, UnauthorizedExcepti
 import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
 import { Between, LessThan, Repository } from "typeorm";
+import { Project } from "../../projects/project.entity";
+import { User } from "../../users/user.entity";
 import { CreateProjectUserDto } from "../dto/create_project_users_dto";
 import { ProjectUser } from "../project-user.entity";
 
@@ -16,12 +18,12 @@ export class ProjectUsersService{
   async create(projectUser: CreateProjectUserDto): Promise<ProjectUser>{
     const { startDate, endDate, projectId, userId} = projectUser;
     
-    // const user: User = await User.findOne({where:{id: userId}});
-    // const project: Project = await Project.findOne({where:{id: projectId}})
+    const user: User = await User.findOne({where:{id: userId}});
+    const project: Project = await Project.findOne({where:{id: projectId}})
 
-    // if(user.id === null || project.id === null){
-    //   throw new NotFoundException('User not found')
-    // }
+    if(user === null || project === null){
+      throw new NotFoundException('User or project not found')
+    }
 
     // if(startDate){
       

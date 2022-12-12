@@ -1,8 +1,9 @@
 
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
 import { Repository } from "typeorm";
+import { ProjectUser } from "../../project-users/project-user.entity";
 import { ProjectUsersService } from "../../project-users/services/project-users.service";
 import { User } from "../../users/user.entity";
 import { CreateProjectDto } from "../dto/create_project_dto";
@@ -39,6 +40,16 @@ export class ProjectsService {
   findIsConcern(id: string): Promise<Project[]> {
     return Project.find({where: {referringEmployeeId: id}, relations: ['referringEmployee']});
   }
+
+  async findProjectUser(userId: string, projectId: string) {
+    const projectUser = await ProjectUser.findOne({where: {userId: userId, projectId: projectId}})
+    if (projectUser) {
+        const result = await Project.find({where: {id: projectId}})
+        return result[0]
+    } else {
+        throw new ForbiddenException("User not found in the project")
+    }
+}
 
   async getById(id: string): Promise<Project>{
     if(!isUUID(id)) throw new BadRequestException('Invalid id') 

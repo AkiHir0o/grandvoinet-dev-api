@@ -1,7 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
-import { Between, LessThan, Repository } from "typeorm";
+import { Between, LessThan, LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import { Project } from "../../projects/project.entity";
 import { User } from "../../users/user.entity";
 import { CreateProjectUserDto } from "../dto/create_project_users_dto";
@@ -25,18 +25,43 @@ export class ProjectUsersService{
       throw new NotFoundException('User or project not found')
     }
 
-    // if(startDate){
-      
-    // }
-
     const newProjectUser = ProjectUser.create();
     newProjectUser.startDate = startDate;
     newProjectUser.endDate = endDate;
     newProjectUser.projectId = projectId;
     newProjectUser.userId = userId;
+
+    const checkDate = await this.projectUserRepository.count({
+      where: [
+        {
+          userId: projectUser.userId,
+          startDate: LessThanOrEqual(projectUser.endDate),
+          endDate: MoreThanOrEqual(projectUser.startDate),
+        },
+        {
+          userId: projectUser.userId,
+          startDate: MoreThanOrEqual(projectUser.startDate),
+          endDate: LessThanOrEqual(projectUser.endDate),
+        },
+        {
+          userId: projectUser.userId,
+          startDate:
+            MoreThanOrEqual(projectUser.startDate) &&
+            LessThanOrEqual(projectUser.endDate),
+          endDate: MoreThanOrEqual(projectUser.endDate),
+        },
+      ],
+    });
     
-    return await newProjectUser.save();
+    if(checkDate != 0){
+      throw new ConflictException("Error")     
+    }else
+    {
+      return await newProjectUser.save();
+    }
+    
   }
+  
 
   findAll(): Promise<ProjectUser[]>{
     return this.projectUserRepository.find();

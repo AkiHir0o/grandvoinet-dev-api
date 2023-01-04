@@ -16,9 +16,6 @@ export class ProjectUsersController{
     @Post('/')
     async create(@Request() req: Request & { user: JwtInterface }, @Body() createProjectUserDto: CreateProjectUserDto){
       if(req.user.role === "Admin" || req.user.role === "ProjectManager"){
-        // if(req.user.id === null){
-        //   throw new NotFoundException('User not found')
-        // }
         return await this.projectUsersService.create(createProjectUserDto)
       } else{
         throw new UnauthorizedException ("Autorisation refusée")

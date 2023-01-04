@@ -1,11 +1,12 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { isUUID } from "class-validator";
-import { Repository } from "typeorm";
+import { LessThanOrEqual, MoreThanOrEqual, Repository } from "typeorm";
 import JwtInterface from "../../auth/interfaces/jwt-interface";
-import { User } from "../../users/user.entity";
 import { CreateEnventDto } from "../dto/create_event_dto";
 import { Event } from "../event.entity";
+import * as dayjs from 'dayjs';
+
 
 @Injectable()
 export class EventsService{
@@ -16,7 +17,23 @@ export class EventsService{
 
   async create(event: CreateEnventDto, user: JwtInterface): Promise<Event>{
     const {date, eventType, eventDescription} = event;
-    
+
+    const events = await this.eventRepository.findBy(
+      {userId : user.id,
+      date : MoreThanOrEqual(dayjs(event.date).startOf('week').toDate()) &&
+      LessThanOrEqual(dayjs(event.date).endOf('week').toDate()),}
+    )
+
+    if(events.length === 2){
+      throw new UnauthorizedException("3 TT in the same week is not possible")
+    }
+
+    for (const event of events) {
+      if(dayjs(event.date).isSame(event.date, 'day')){
+        throw new UnauthorizedException("Same event the same day with user role")
+      }
+    }    
+
     const newEvent = Event.create();
     newEvent.date = date;
     newEvent.eventStatus = 
@@ -27,8 +44,10 @@ export class EventsService{
     newEvent.eventType = eventType;
     newEvent.eventDescription = eventDescription;
     newEvent.userId = user.id;
-    
-    return this.eventRepository.save(newEvent)
+
+
+
+    return this.eventRepository.save(newEvent);
   }
 
   findAll(): Promise<Event[]> {
@@ -42,5 +61,14 @@ export class EventsService{
         throw new NotFoundException('User not found');
       }
     return await this.eventRepository.findOneBy({id});
+  }
+
+  async updateStatus(id: string, user: JwtInterface, accepted: boolean): Promise<Event>{
+    if(user.role === "Employee") throw new UnauthorizedException("Role not accepted");
+    const newStatus = await this.getById(id)
+    if(newStatus.eventStatus != "Accepted"){
+      newStatus.eventStatus = accepted ? "Accepted" : "Declined"
+      return await this.eventRepository.save(newStatus)
+    }
   }
 }

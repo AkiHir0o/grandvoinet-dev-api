@@ -7,6 +7,7 @@ import { UserService } from '../services/user.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { LoginUserDto } from '../dto/login_user.dto';
 import { User } from '../user.entity';
+import JwtInterface from '../../auth/interfaces/jwt-interface';
 
 @Controller('users')
   export class UserController {
@@ -41,8 +42,13 @@ import { User } from '../user.entity';
     
     @Get(':id')
     getById(@Param('id') id: string): Promise<User> {
-    return this.userService.getById(id)
-  }
+      return this.userService.getById(id)
+    }
+
+    // @Get(':id/meal-vouchers/:month')
+    // getMealVouchers(@Body() getMealVouchers): Promise<User>{
+    //   return this.getMealVouchers();
+    // }
 }
 
   export interface ValidationPipeOptions extends ValidatorOptions {

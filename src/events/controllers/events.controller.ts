@@ -28,4 +28,16 @@ export class EventsController{
   getById(@Param('id') id: string): Promise<Event> {
     return this.eventService.getById(id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/:id/validate')
+  isValidate(@Request() req: Request & { user: JwtInterface }, @Param('id') id: string): Promise<Event>{
+    return this.eventService.updateStatus(id, req.user, true);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/:id/decline')
+  isDecline(@Request() req: Request & { user: JwtInterface }, @Param('id') id: string): Promise<Event>{
+    return this.eventService.updateStatus(id, req.user, false);
+  }
 }
